@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Obrazów Pamiątkowych</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Generator Obrazów Pamiątkowych</h1>
+            <p class="subtitle">Stwórz elegancki obraz upamiętniający</p>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>Dane osobowe</h2>
+                
+                <div class="form-group">
+                    <label for="firstName">Imię</label>
+                    <input type="text" id="firstName" placeholder="np. Adela" value="Adela">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Nazwisko</label>
+                    <input type="text" id="lastName" placeholder="np. Sobota" value="Sobota">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="birthDate">Data urodzenia</label>
+                        <input type="text" id="birthDate" placeholder="np. 9.02.1948" value="9.02.1948">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deathDate">Data śmierci</label>
+                        <input type="text" id="deathDate" placeholder="np. 10.01.2024" value="10.01.2024">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="photoUpload">Zdjęcie (opcjonalne)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="photoUpload" accept="image/*">
+                        <div class="file-upload-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <span>Wybierz zdjęcie</span>
+                        </div>
+                        <span class="file-name" id="fileName">Nie wybrano pliku</span>
+                    </div>
+                    <button type="button" id="removePhoto" class="btn-secondary" style="display: none;">Usuń zdjęcie</button>
+                </div>
+
+                <div class="buttons-row">
+                    <button type="button" id="videoBtn" class="btn-primary btn-video">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        Wygeneruj wideo
+                    </button>
+                </div>
+                
+                <div id="progressContainer" class="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">Generowanie wideo...</span>
+                </div>
+            </section>
+
+            <section class="preview-section">
+                <h2>Podgląd</h2>
+                <div class="canvas-wrapper">
+                    <canvas id="memorialCanvas" width="1456" height="816"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mp4Muxer for MP4 creation -->
+    <script type="module">
+        import * as Mp4Muxer from 'https://cdn.jsdelivr.net/npm/mp4-muxer@4.3.3/+esm';
+        window.Mp4Muxer = Mp4Muxer;
+    </script>
+    <script defer src="app.js"></script>
+</body>
+</html>

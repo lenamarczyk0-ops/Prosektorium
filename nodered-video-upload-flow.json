@@ -1,0 +1,193 @@
+[
+    {
+        "id": "upload_video_flow",
+        "type": "tab",
+        "label": "Upload Video",
+        "disabled": false,
+        "info": "Flow do uploadu wideo i odtwarzania na projektorze"
+    },
+    {
+        "id": "event_upload",
+        "type": "server-events",
+        "z": "upload_video_flow",
+        "name": "Event: upload_video",
+        "server": "",
+        "version": 2,
+        "eventType": "upload_video",
+        "exposeAsEntityConfig": "",
+        "waitForRunning": true,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            }
+        ],
+        "x": 130,
+        "y": 100,
+        "wires": [
+            ["decode_base64"]
+        ]
+    },
+    {
+        "id": "decode_base64",
+        "type": "function",
+        "z": "upload_video_flow",
+        "name": "Dekoduj Base64",
+        "func": "// Szukaj danych w różnych miejscach\nlet videoData = null;\nlet filename = '_DOMYSLNY_.mp4';\n\n// Sprawdź różne możliwe lokalizacje danych\nif (msg.payload && msg.payload.data) {\n    videoData = msg.payload.data;\n    filename = msg.payload.filename || filename;\n} else if (msg.payload && msg.payload.event && msg.payload.event.data) {\n    videoData = msg.payload.event.data;\n    filename = msg.payload.event.filename || filename;\n} else if (msg.data && msg.data.data) {\n    videoData = msg.data.data;\n    filename = msg.data.filename || filename;\n}\n\nif (!videoData) {\n    node.error('Nie znaleziono danych video w payload');\n    node.status({fill:'red', shape:'dot', text:'Brak danych'});\n    return null;\n}\n\n// Dekoduj base64\ntry {\n    msg.payload = Buffer.from(videoData, 'base64');\n    msg.filename = '/media/multimedia/' + filename;\n    msg.videoFilename = filename;\n    \n    node.status({fill:'green', shape:'dot', text: (msg.payload.length/1024/1024).toFixed(1) + ' MB -> ' + filename});\n    return msg;\n} catch (e) {\n    node.error('Błąd dekodowania: ' + e.message);\n    node.status({fill:'red', shape:'dot', text:'Błąd dekodowania'});\n    return null;\n}",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 100,
+        "wires": [
+            ["write_file", "debug_decode"]
+        ]
+    },
+    {
+        "id": "debug_decode",
+        "type": "debug",
+        "z": "upload_video_flow",
+        "name": "Debug: Po dekodowaniu",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 360,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "write_file",
+        "type": "file",
+        "z": "upload_video_flow",
+        "name": "Zapisz plik",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 550,
+        "y": 100,
+        "wires": [
+            ["turn_on_projector"]
+        ]
+    },
+    {
+        "id": "turn_on_projector",
+        "type": "api-call-service",
+        "z": "upload_video_flow",
+        "name": "Włącz projektor",
+        "server": "",
+        "version": 5,
+        "debugenabled": false,
+        "domain": "media_player",
+        "service": "turn_on",
+        "areaId": [],
+        "deviceId": [],
+        "entityId": ["media_player.xsk"],
+        "data": "",
+        "dataType": "json",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "x": 760,
+        "y": 100,
+        "wires": [
+            ["delay_1min"]
+        ]
+    },
+    {
+        "id": "delay_1min",
+        "type": "delay",
+        "z": "upload_video_flow",
+        "name": "Czekaj 1 min",
+        "pauseType": "delay",
+        "timeout": "1",
+        "timeoutUnits": "minutes",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 950,
+        "y": 100,
+        "wires": [
+            ["prepare_play"]
+        ]
+    },
+    {
+        "id": "prepare_play",
+        "type": "function",
+        "z": "upload_video_flow",
+        "name": "Przygotuj play",
+        "func": "msg.payload = {\n    data: {\n        entity_id: \"media_player.xsk\",\n        media_content_id: \"/media/multimedia/\" + msg.videoFilename,\n        media_content_type: \"video/mp4\"\n    }\n};\n\nnode.status({fill:'blue', shape:'dot', text:'Odtwarzam: ' + msg.videoFilename});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 100,
+        "wires": [
+            ["play_media"]
+        ]
+    },
+    {
+        "id": "play_media",
+        "type": "api-call-service",
+        "z": "upload_video_flow",
+        "name": "Odtwórz na projektorze",
+        "server": "",
+        "version": 5,
+        "debugenabled": true,
+        "domain": "media_player",
+        "service": "play_media",
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "x": 1350,
+        "y": 100,
+        "wires": [
+            ["debug_final"]
+        ]
+    },
+    {
+        "id": "debug_final",
+        "type": "debug",
+        "z": "upload_video_flow",
+        "name": "Debug: Końcowy",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1560,
+        "y": 100,
+        "wires": []
+    }
+]
