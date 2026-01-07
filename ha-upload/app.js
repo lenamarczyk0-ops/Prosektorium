@@ -22,7 +22,7 @@ class MemorialGenerator {
         this.generatedVideoBlob = null;
         this.generatedFilename = null;
         
-        // Home Assistant config - empty for same-origin (hosted on HA)
+        // Home Assistant config (pusty = ten sam serwer)
         this.haUrl = '';
         this.haToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI4NjJhODYzYWI5NmE0Yjc5ODI5OGFkZTdmZjdiNTYwMyIsImlhdCI6MTc2NzY0NDczMiwiZXhwIjoyMDgzMDA0NzMyfQ.LF_4pQzvLDwfefa0Tc38Mjci_khSwWS_xJLIrcoZ-XU';
         
@@ -238,7 +238,7 @@ class MemorialGenerator {
     async generateVideo() {
         const firstName = this.firstNameInput.value || 'memorial';
         const lastName = this.lastNameInput.value || '';
-        const filename = `${firstName}_${lastName}_pamiatka.mp4`.replace(/\s+/g, '_');
+        const filename = `${firstName}_${lastName}_pamiatka.webm`.replace(/\s+/g, '_');
         
         // Show progress
         this.progressContainer.style.display = 'block';
@@ -247,163 +247,110 @@ class MemorialGenerator {
         this.videoBtn.disabled = true;
         
         try {
-            // Check if VideoEncoder is supported
-            if (typeof VideoEncoder === 'undefined') {
-                throw new Error('Twoja przeglądarka nie obsługuje WebCodecs API. Użyj Chrome lub Edge.');
-            }
-            
-            // Use smaller dimensions for better codec compatibility
-            // Make dimensions divisible by 16 for H.264
             const width = 1280;
             const height = 720;
-            const fps = 10; // Lower FPS for static content (saves processing time and file size)
-            const duration = 180; // 3 minutes = 180 seconds
-            const totalFrames = fps * duration;
+            const duration = 180; // 3 minutes
             
-            // Create offscreen canvas for rendering at target resolution
+            // Create offscreen canvas
             const offscreenCanvas = document.createElement('canvas');
             offscreenCanvas.width = width;
             offscreenCanvas.height = height;
             const offscreenCtx = offscreenCanvas.getContext('2d');
             
-            // Calculate bitrate to stay under 9.5MB for 3 minutes
-            // 9.5 MB = 76 Mbit, 76/180 ≈ 0.42 Mbps, using 400 kbps for safety
-            const bitrate = 400_000; // 400 kbps
+            // Render frame to offscreen canvas
+            this.render();
+            offscreenCtx.drawImage(this.canvas, 0, 0, width, height);
             
-            // Check codec support
-            const codecConfig = {
-                codec: 'avc1.42001f', // H.264 Baseline Level 3.1
-                width: width,
-                height: height,
-                bitrate: bitrate,
-                framerate: fps,
-                avc: { format: 'avc' }
+            // Create video stream from canvas
+            const stream = offscreenCanvas.captureStream(1); // 1 FPS for static image
+            
+            // Check supported MIME types
+            let mimeType = 'video/webm;codecs=vp9';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm;codecs=vp8';
+            }
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm';
+            }
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/mp4';
+            }
+            
+            const chunks = [];
+            const recorder = new MediaRecorder(stream, {
+                mimeType: mimeType,
+                videoBitsPerSecond: 500000 // 500 kbps
+            });
+            
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunks.push(e.data);
+                }
             };
             
-            const support = await VideoEncoder.isConfigSupported(codecConfig);
-            if (!support.supported) {
-                throw new Error('Kodek H.264 nie jest obsługiwany przez tę przeglądarkę');
-            }
-            
-            // Create MP4 muxer
-            let muxer = new Mp4Muxer.Muxer({
-                target: new Mp4Muxer.ArrayBufferTarget(),
-                video: {
-                    codec: 'avc',
-                    width: width,
-                    height: height
-                },
-                fastStart: 'in-memory'
+            // Promise to wait for recording to finish
+            const recordingDone = new Promise((resolve, reject) => {
+                recorder.onstop = () => resolve();
+                recorder.onerror = (e) => reject(e);
             });
             
-            // Create video encoder
-            let encoderError = null;
-            const encoder = new VideoEncoder({
-                output: (chunk, meta) => {
-                    muxer.addVideoChunk(chunk, meta);
-                },
-                error: (e) => {
-                    console.error('Encoder error:', e);
-                    encoderError = e;
-                }
-            });
+            // Start recording
+            recorder.start(1000); // Collect data every second
             
-            encoder.configure(support.config);
-            
-            // Generate frames
-            for (let i = 0; i < totalFrames; i++) {
-                if (encoderError) throw encoderError;
+            // Update progress and keep canvas refreshed
+            const startTime = Date.now();
+            const updateInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const progress = Math.min(elapsed / duration, 1);
                 
-                const progress = i / totalFrames;
+                this.progressFill.style.width = `${progress * 100}%`;
+                this.progressText.textContent = `Nagrywanie: ${Math.floor(elapsed)}s / ${duration}s`;
                 
-                // Update progress bar
-                this.progressFill.style.width = `${progress * 90}%`;
-                this.progressText.textContent = `Generowanie klatki ${i + 1}/${totalFrames}...`;
-                
-                // Render animated frame to main canvas
-                this.renderAnimated(progress);
-                
-                // Copy to offscreen canvas at target resolution
+                // Keep refreshing canvas
+                this.render();
                 offscreenCtx.drawImage(this.canvas, 0, 0, width, height);
                 
-                // Create VideoFrame from offscreen canvas
-                const frame = new VideoFrame(offscreenCanvas, {
-                    timestamp: (i * 1000000) / fps, // microseconds
-                    duration: 1000000 / fps
-                });
-                
-                // Encode frame (keyframe every second)
-                encoder.encode(frame, { keyFrame: i % fps === 0 });
-                frame.close();
-                
-                // Yield to UI every few frames
-                if (i % 10 === 0) {
-                    await new Promise(r => setTimeout(r, 1));
+                if (elapsed >= duration) {
+                    clearInterval(updateInterval);
+                    recorder.stop();
                 }
-            }
+            }, 1000);
             
-            // Wait for encoder to finish
-            await encoder.flush();
-            encoder.close();
+            // Wait for recording to finish
+            await recordingDone;
             
-            // Finalize MP4
-            muxer.finalize();
-            
-            // Render final frame to main canvas
-            this.render();
-            
-            // Get the MP4 data
-            const mp4Data = muxer.target.buffer;
-            const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' });
-            
-            // Check file size
-            const maxSize = 9.5 * 1024 * 1024;
-            const fileSizeMB = mp4Blob.size / (1024 * 1024);
+            // Create blob
+            const videoBlob = new Blob(chunks, { type: mimeType });
+            const fileSizeMB = videoBlob.size / (1024 * 1024);
             
             this.progressFill.style.width = '100%';
             this.progressText.textContent = `Rozmiar: ${fileSizeMB.toFixed(2)} MB`;
             
-            if (mp4Blob.size > maxSize) {
-                this.progressText.textContent = `Plik: ${fileSizeMB.toFixed(2)} MB (przekracza limit 9.5 MB)`;
-            }
-            
             // Save blob for sending
-            this.generatedVideoBlob = mp4Blob;
-            this.generatedFilename = `${lastName || firstName || 'video'}.mp4`.toLowerCase().replace(/\s+/g, '_');
+            this.generatedVideoBlob = videoBlob;
+            this.generatedFilename = `${lastName || firstName || 'video'}.webm`.toLowerCase().replace(/\s+/g, '_');
             
             // Enable send button
             this.sendBtn.disabled = false;
             
-            // Check if mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            // Download
+            const url = URL.createObjectURL(videoBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
             
-            if (isMobile) {
-                // On mobile - don't download, just show success and prompt to send
-                this.progressText.textContent = 'Gotowe! Kliknij "Wyślij do prosektorium"';
-                setTimeout(() => {
-                    this.progressContainer.style.display = 'none';
-                    this.videoBtn.disabled = false;
-                }, 3000);
-            } else {
-                // On desktop - download file
-                const url = URL.createObjectURL(mp4Blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                link.click();
-                URL.revokeObjectURL(url);
-                
-                setTimeout(() => {
-                    this.progressContainer.style.display = 'none';
-                    this.videoBtn.disabled = false;
-                }, 2000);
-            }
+            URL.revokeObjectURL(url);
+            
+            setTimeout(() => {
+                this.progressContainer.style.display = 'none';
+                this.videoBtn.disabled = false;
+            }, 2000);
             
         } catch (error) {
             console.error('Error generating video:', error);
             this.progressText.textContent = 'Błąd: ' + (error.message || error);
             
-            // Restore main canvas
             this.render();
             
             setTimeout(() => {
@@ -574,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Control Panel for Home Assistant
 class ControlPanel {
     constructor() {
-        this.haUrl = ''; // empty for same-origin (hosted on HA)
+        this.haUrl = 'http://konefal.ten10.eu:8080';
         this.haToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI4NjJhODYzYWI5NmE0Yjc5ODI5OGFkZTdmZjdiNTYwMyIsImlhdCI6MTc2NzY0NDczMiwiZXhwIjoyMDgzMDA0NzMyfQ.LF_4pQzvLDwfefa0Tc38Mjci_khSwWS_xJLIrcoZ-XU';
         
         this.init();
