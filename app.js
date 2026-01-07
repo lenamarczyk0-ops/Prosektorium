@@ -627,46 +627,51 @@ class ControlPanel {
         if (!this.cameraFeed) return;
         
         try {
-            // Add timestamp to prevent caching
-            const timestamp = Date.now();
-            const cameraUrl = `${this.haUrl}/api/camera_proxy/camera.yi_hack_a2_1bedf1_cam?t=${timestamp}`;
-            
-            // Create new image to test loading
-            const img = new Image();
-            img.onload = () => {
-                this.cameraFeed.src = cameraUrl;
-                if (this.cameraOffline) {
-                    this.cameraOffline.classList.add('hidden');
-                }
-            };
-            img.onerror = () => {
-                if (this.cameraOffline) {
-                    this.cameraOffline.classList.remove('hidden');
-                }
-            };
-            
-            // Set authorization header via fetch and create blob URL
-            const response = await fetch(cameraUrl, {
+            // First get camera state to retrieve entity_picture with token
+            const stateResponse = await fetch(`${this.haUrl}/api/states/camera.yi_hack_a2_1bedf1_cam`, {
                 headers: {
                     'Authorization': `Bearer ${this.haToken}`
                 }
             });
             
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                this.cameraFeed.src = url;
-                if (this.cameraOffline) {
-                    this.cameraOffline.classList.add('hidden');
+            if (stateResponse.ok) {
+                const stateData = await stateResponse.json();
+                const entityPicture = stateData.attributes?.entity_picture;
+                
+                if (entityPicture) {
+                    // Add timestamp to prevent caching
+                    const timestamp = Date.now();
+                    const cameraUrl = `${this.haUrl}${entityPicture}&t=${timestamp}`;
+                    
+                    // Try to load image
+                    this.cameraFeed.onerror = () => {
+                        if (this.cameraOffline) {
+                            this.cameraOffline.textContent = 'Brak obrazu';
+                            this.cameraOffline.classList.remove('hidden');
+                        }
+                    };
+                    this.cameraFeed.onload = () => {
+                        if (this.cameraOffline) {
+                            this.cameraOffline.classList.add('hidden');
+                        }
+                    };
+                    this.cameraFeed.src = cameraUrl;
+                } else {
+                    if (this.cameraOffline) {
+                        this.cameraOffline.textContent = 'Brak URL kamery';
+                        this.cameraOffline.classList.remove('hidden');
+                    }
                 }
             } else {
                 if (this.cameraOffline) {
+                    this.cameraOffline.textContent = 'Błąd połączenia';
                     this.cameraOffline.classList.remove('hidden');
                 }
             }
         } catch (error) {
             console.error('Camera error:', error);
             if (this.cameraOffline) {
+                this.cameraOffline.textContent = 'Błąd: ' + error.message;
                 this.cameraOffline.classList.remove('hidden');
             }
         }
