@@ -150,14 +150,14 @@ class MemorialGenerator {
             ctx.fillText(deathDate, textX, 570);
         }
         
-        // Draw large decorative branch on right (if uploaded)
-        if (this.uploadedBranch) {
-            this.drawLargeBranch(ctx, width - 350, height / 2);
+        // Draw photo if uploaded (before branch so branch is on top)
+        if (this.uploadedPhoto) {
+            this.drawPhoto(ctx, width - 550, 150, 350, 500);
         }
         
-        // Draw photo if uploaded
-        if (this.uploadedPhoto) {
-            this.drawPhoto(ctx, width - 450, 100, 350, 500);
+        // Draw large decorative branch on right (if uploaded) - on top of photo
+        if (this.uploadedBranch) {
+            this.drawLargeBranch(ctx, width - 250, height / 2);
         }
     }
     
@@ -221,8 +221,11 @@ class MemorialGenerator {
         ctx.lineWidth = 2;
         ctx.strokeRect(offsetX - 5, offsetY - 5, width + 10, height + 10);
         
-        // Draw image
+        // Draw image with grayscale filter
+        ctx.save();
+        ctx.filter = 'grayscale(100%)';
         ctx.drawImage(img, offsetX, offsetY, width, height);
+        ctx.restore();
         
         // Add subtle vignette effect
         const gradient = ctx.createRadialGradient(
@@ -249,7 +252,7 @@ class MemorialGenerator {
         try {
             // Check if VideoEncoder is supported
             if (typeof VideoEncoder === 'undefined') {
-                throw new Error('Twoja przeglądarka nie obsługuje WebCodecs API. Użyj Chrome lub Edge.');
+                throw new Error('Twoja przeglądarka nie obsługuje generowania wideo. Użyj Safari lub włącz HTTPS.');
             }
             
             // Check if mobile device
@@ -482,14 +485,14 @@ class MemorialGenerator {
             ctx.fillText(deathDate, textX, 570);
         }
         
-        // Draw large decorative branch on right (if uploaded)
-        if (this.uploadedBranch) {
-            this.drawLargeBranch(ctx, width - 350, height / 2);
+        // Draw photo if uploaded (before branch so branch is on top)
+        if (this.uploadedPhoto) {
+            this.drawPhoto(ctx, width - 550, 150, 350, 500);
         }
         
-        // Draw photo if uploaded
-        if (this.uploadedPhoto) {
-            this.drawPhoto(ctx, width - 450, 100, 350, 500);
+        // Draw large decorative branch on right (if uploaded) - on top of photo
+        if (this.uploadedBranch) {
+            this.drawLargeBranch(ctx, width - 250, height / 2);
         }
     }
     
