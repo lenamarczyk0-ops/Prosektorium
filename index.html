@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Obrazów Pamiątkowych</title>
+    <title>Sala Pożegnań - Usługi Pogrzebowe Sylwia Konefał</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,8 +12,8 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>Generator Obrazów Pamiątkowych</h1>
-            <p class="subtitle">Stwórz elegancki obraz upamiętniający</p>
+            <h1>Sala Pożegnań</h1>
+            <p class="subtitle">Usługi Pogrzebowe Sylwia Konefał ver. 1.0</p>
         </header>
 
         <main>
@@ -111,6 +111,7 @@
                         <button type="button" id="musicOn" class="control-btn">WŁĄCZ</button>
                         <button type="button" id="musicOff" class="control-btn">WYŁĄCZ</button>
                     </div>
+                    <div class="status-indicator" id="musicStatus">--</div>
                     <div class="now-playing">
                         <label>Obecnie grany utwór:</label>
                         <span id="currentTrack">--</span>
@@ -149,18 +150,6 @@
                     <div class="schedule-info" id="scheduleInfo"></div>
                 </div>
                 
-                <!-- Kamera -->
-                <div class="control-box camera-box">
-                    <h3>KAMERA WEWNĘTRZNA</h3>
-                    <div class="camera-preview">
-                        <img id="cameraFeed" src="" alt="Podgląd kamery" crossorigin="anonymous">
-                        <div class="camera-offline" id="cameraOffline">Ładowanie...</div>
-                    </div>
-                    <div class="camera-controls">
-                        <button type="button" id="refreshCamera" class="control-btn">ODŚWIEŻ</button>
-                        <a href="http://konefal.ten10.eu:8080/lovelace" target="_blank" class="control-btn">OTWÓRZ HA</a>
-                    </div>
-                </div>
             </div>
         </section>
     </div>

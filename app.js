@@ -611,71 +611,11 @@ class ControlPanel {
         document.getElementById('saveScheduleOff')?.addEventListener('click', () => this.saveScheduleOff());
         document.getElementById('disableSchedule')?.addEventListener('click', () => this.disableSchedule());
         
-        // Camera
-        document.getElementById('refreshCamera')?.addEventListener('click', () => this.refreshCamera());
-        this.cameraFeed = document.getElementById('cameraFeed');
-        this.cameraOffline = document.getElementById('cameraOffline');
-        
-        // Refresh status and camera
+        // Refresh status
         this.refreshStatus();
-        this.refreshCamera();
         setInterval(() => this.refreshStatus(), 30000);
-        setInterval(() => this.refreshCamera(), 10000); // Refresh camera every 10 seconds
     }
     
-    async refreshCamera() {
-        if (!this.cameraFeed) return;
-        
-        try {
-            // First get camera state to retrieve entity_picture with token
-            const stateResponse = await fetch(`${this.haUrl}/api/states/camera.yi_hack_a2_1bedf1_cam`, {
-                headers: {
-                    'Authorization': `Bearer ${this.haToken}`
-                }
-            });
-            
-            if (stateResponse.ok) {
-                const stateData = await stateResponse.json();
-                const entityPicture = stateData.attributes?.entity_picture;
-                
-                if (entityPicture) {
-                    // Add timestamp to prevent caching
-                    const timestamp = Date.now();
-                    const cameraUrl = `${this.haUrl}${entityPicture}&t=${timestamp}`;
-                    
-                    // Try to load image
-                    this.cameraFeed.onerror = () => {
-                        if (this.cameraOffline) {
-                            this.cameraOffline.textContent = 'Brak obrazu';
-                            this.cameraOffline.classList.remove('hidden');
-                        }
-                    };
-                    this.cameraFeed.onload = () => {
-                        if (this.cameraOffline) {
-                            this.cameraOffline.classList.add('hidden');
-                        }
-                    };
-                    this.cameraFeed.src = cameraUrl;
-                } else {
-                    if (this.cameraOffline) {
-                        this.cameraOffline.textContent = 'Brak URL kamery';
-                        this.cameraOffline.classList.remove('hidden');
-                    }
-                }
-            } else {
-                if (this.cameraOffline) {
-                    this.cameraOffline.textContent = 'Błąd połączenia';
-                    this.cameraOffline.classList.remove('hidden');
-                }
-            }
-        } catch (error) {
-            console.error('Camera error:', error);
-            if (this.cameraOffline) {
-                this.cameraOffline.textContent = 'Błąd: ' + error.message;
-                this.cameraOffline.classList.remove('hidden');
-            }
-        }
-    }
     
     async callService(domain, service, data = {}) {
         try {
@@ -782,6 +722,19 @@ class ControlPanel {
                 if (videoStatus) {
                     videoStatus.textContent = videoData.state === 'on' ? 'WŁĄCZONE' : 'WYŁĄCZONE';
                     videoStatus.style.color = videoData.state === 'on' ? '#4a9c6b' : '#c94a4a';
+                }
+            }
+            
+            // Get music switch state
+            const musicResponse = await fetch(`${this.haUrl}/api/states/switch.muzyka`, {
+                headers: { 'Authorization': `Bearer ${this.haToken}` }
+            });
+            if (musicResponse.ok) {
+                const musicData = await musicResponse.json();
+                const musicStatus = document.getElementById('musicStatus');
+                if (musicStatus) {
+                    musicStatus.textContent = musicData.state === 'on' ? 'WŁĄCZONE' : 'WYŁĄCZONE';
+                    musicStatus.style.color = musicData.state === 'on' ? '#4a9c6b' : '#c94a4a';
                 }
             }
             
