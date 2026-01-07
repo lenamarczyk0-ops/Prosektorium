@@ -252,12 +252,15 @@ class MemorialGenerator {
                 throw new Error('Twoja przeglądarka nie obsługuje WebCodecs API. Użyj Chrome lub Edge.');
             }
             
+            // Check if mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             // Use smaller dimensions for better codec compatibility
             // Make dimensions divisible by 16 for H.264
             const width = 1280;
             const height = 720;
-            const fps = 10; // Lower FPS for static content (saves processing time and file size)
-            const duration = 180; // 3 minutes = 180 seconds
+            const fps = isMobile ? 5 : 10; // Lower FPS on mobile
+            const duration = isMobile ? 30 : 180; // 30 sec on mobile, 3 min on desktop
             const totalFrames = fps * duration;
             
             // Create offscreen canvas for rendering at target resolution
@@ -374,9 +377,6 @@ class MemorialGenerator {
             // Enable send button
             this.sendBtn.disabled = false;
             
-            // Check if mobile device
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
             if (isMobile) {
                 // On mobile - don't download, just show success and prompt to send
                 this.progressText.textContent = 'Gotowe! Kliknij "Wyślij do prosektorium"';
@@ -386,17 +386,17 @@ class MemorialGenerator {
                 }, 3000);
             } else {
                 // On desktop - download file
-                const url = URL.createObjectURL(mp4Blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                link.click();
-                URL.revokeObjectURL(url);
-                
-                setTimeout(() => {
-                    this.progressContainer.style.display = 'none';
-                    this.videoBtn.disabled = false;
-                }, 2000);
+            const url = URL.createObjectURL(mp4Blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            setTimeout(() => {
+                this.progressContainer.style.display = 'none';
+                this.videoBtn.disabled = false;
+            }, 2000);
             }
             
         } catch (error) {
