@@ -150,14 +150,13 @@ class MemorialGenerator {
             ctx.fillText(deathDate, textX, 570);
         }
         
-        // Draw photo if uploaded (before branch so branch is on top)
+        // Draw photo OR large branch (not both)
         if (this.uploadedPhoto) {
+            // Photo - no large branch
             this.drawPhoto(ctx, width - 550, 150, 350, 500);
-        }
-        
-        // Draw large decorative branch on right (if uploaded) - on top of photo
-        if (this.uploadedBranch) {
-            this.drawLargeBranch(ctx, width - 250, height / 2);
+        } else if (this.uploadedBranch) {
+            // No photo - show large decorative branch on right
+            this.drawLargeBranch(ctx, width - 350, height / 2);
         }
     }
     
@@ -485,14 +484,13 @@ class MemorialGenerator {
             ctx.fillText(deathDate, textX, 570);
         }
         
-        // Draw photo if uploaded (before branch so branch is on top)
+        // Draw photo OR large branch (not both)
         if (this.uploadedPhoto) {
+            // Photo - no large branch
             this.drawPhoto(ctx, width - 550, 150, 350, 500);
-        }
-        
-        // Draw large decorative branch on right (if uploaded) - on top of photo
-        if (this.uploadedBranch) {
-            this.drawLargeBranch(ctx, width - 250, height / 2);
+        } else if (this.uploadedBranch) {
+            // No photo - show large decorative branch on right
+            this.drawLargeBranch(ctx, width - 350, height / 2);
         }
     }
     
