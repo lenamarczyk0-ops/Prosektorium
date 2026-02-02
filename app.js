@@ -784,6 +784,60 @@ class ControlPanel {
                     currentTrack.textContent = trackNum > 0 ? `Utwór ${trackNum}` : '--';
                 }
             }
+            
+            // Get schedule times
+            const scheduleOnResponse = await fetch(`${this.haUrl}/api/states/input_datetime.schedule_on`, {
+                headers: { 'Authorization': `Bearer ${this.haToken}` }
+            });
+            const scheduleOffResponse = await fetch(`${this.haUrl}/api/states/input_datetime.schedule_off`, {
+                headers: { 'Authorization': `Bearer ${this.haToken}` }
+            });
+            
+            if (scheduleOnResponse.ok && scheduleOffResponse.ok) {
+                const scheduleOnData = await scheduleOnResponse.json();
+                const scheduleOffData = await scheduleOffResponse.json();
+                const scheduleInfo = document.getElementById('scheduleInfo');
+                
+                const onTime = scheduleOnData.state; // format: "HH:MM:SS"
+                const offTime = scheduleOffData.state;
+                
+                // Format time (remove seconds)
+                const formatTime = (t) => t ? t.substring(0, 5) : '00:00';
+                const onFormatted = formatTime(onTime);
+                const offFormatted = formatTime(offTime);
+                
+                if (scheduleInfo) {
+                    if (onFormatted === '00:00' && offFormatted === '00:00') {
+                        scheduleInfo.textContent = 'Harmonogram wyłączony';
+                        scheduleInfo.classList.add('visible');
+                        scheduleInfo.style.borderColor = '#c94a4a';
+                        scheduleInfo.style.color = '#c94a4a';
+                    } else {
+                        let text = '';
+                        if (onFormatted !== '00:00') {
+                            text += `Włączenie: ${onFormatted}`;
+                        }
+                        if (offFormatted !== '00:00') {
+                            if (text) text += ' | ';
+                            text += `Wyłączenie: ${offFormatted}`;
+                        }
+                        scheduleInfo.textContent = text;
+                        scheduleInfo.classList.add('visible');
+                        scheduleInfo.style.borderColor = 'var(--accent)';
+                        scheduleInfo.style.color = 'var(--accent)';
+                    }
+                }
+                
+                // Update input fields
+                const scheduleOnInput = document.getElementById('scheduleOn');
+                const scheduleOffInput = document.getElementById('scheduleOff');
+                if (scheduleOnInput && onFormatted !== '00:00') {
+                    scheduleOnInput.value = onFormatted;
+                }
+                if (scheduleOffInput && offFormatted !== '00:00') {
+                    scheduleOffInput.value = offFormatted;
+                }
+            }
         } catch (error) {
             console.error('Refresh status error:', error);
         }

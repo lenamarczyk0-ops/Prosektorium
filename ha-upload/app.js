@@ -100,48 +100,66 @@ class MemorialGenerator {
         const birthDate = this.birthDateInput.value || '';
         const deathDate = this.deathDateInput.value || '';
         
-        // Calculate positions based on photo presence
+        // Calculate center position for text (left half of canvas)
         const hasPhoto = this.uploadedPhoto !== null;
-        const textX = hasPhoto ? 120 : 200;
+        const leftAreaWidth = hasPhoto ? (width - 450) : (width - 400);
+        const textX = leftAreaWidth / 2;
         
-        // Draw name with small caps style
+        // Draw name with small caps style - CENTERED
         ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
+        ctx.textAlign = 'center';
         
-        // First name - larger first letter
+        // First name - larger first letter (centered)
         if (firstName) {
             const firstLetter = firstName.charAt(0).toUpperCase();
             const restName = firstName.slice(1).toUpperCase();
             
+            // Measure full name width to center properly
             ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
             const firstLetterWidth = ctx.measureText(firstLetter).width;
-            ctx.fillText(firstLetter, textX, 240);
-            
             ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
-            ctx.fillText(restName, textX + firstLetterWidth, 240);
+            const restWidth = ctx.measureText(restName).width;
+            const totalWidth = firstLetterWidth + restWidth;
+            
+            // Draw from left offset to appear centered
+            const startX = textX - totalWidth / 2;
+            ctx.textAlign = 'left';
+            ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(firstLetter, startX, 240);
+            ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(restName, startX + firstLetterWidth, 240);
         }
         
-        // Last name - larger first letter
+        // Last name - larger first letter (centered)
         if (lastName) {
             const firstLetter = lastName.charAt(0).toUpperCase();
             const restName = lastName.slice(1).toUpperCase();
             
+            // Measure full name width to center properly
             ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
             const firstLetterWidth = ctx.measureText(firstLetter).width;
-            ctx.fillText(firstLetter, textX, 320);
-            
             ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
-            ctx.fillText(restName, textX + firstLetterWidth, 320);
+            const restWidth = ctx.measureText(restName).width;
+            const totalWidth = firstLetterWidth + restWidth;
+            
+            // Draw from left offset to appear centered
+            const startX = textX - totalWidth / 2;
+            ctx.textAlign = 'left';
+            ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(firstLetter, startX, 320);
+            ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(restName, startX + firstLetterWidth, 320);
         }
         
         // Draw small decorative branch below name (if uploaded)
         if (this.uploadedBranch) {
-            this.drawSmallBranch(ctx, textX + 80, 400);
+            this.drawSmallBranch(ctx, textX, 400);
         }
         
-        // Draw dates
+        // Draw dates - centered
         ctx.font = 'italic 48px "Cormorant Garamond", Georgia, serif';
         ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
         
         if (birthDate) {
             ctx.fillText(birthDate, textX, 500);
@@ -376,51 +394,69 @@ class MemorialGenerator {
         const birthDate = this.birthDateInput.value || '';
         const deathDate = this.deathDateInput.value || '';
         
-        // Calculate positions based on photo presence
+        // Calculate center position for text (left half of canvas)
         const hasPhoto = this.uploadedPhoto !== null;
-        const textX = hasPhoto ? 120 : 200;
+        const leftAreaWidth = hasPhoto ? (width - 450) : (width - 400);
+        const textX = leftAreaWidth / 2;
         
         // All elements visible at full opacity (no animation)
         const opacity = 1;
         
-        // Draw name with small caps style
+        // Draw name with small caps style - CENTERED
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.textAlign = 'left';
+        ctx.textAlign = 'center';
         
-        // First name - larger first letter
+        // First name - larger first letter (centered)
         if (firstName) {
             const firstLetter = firstName.charAt(0).toUpperCase();
             const restName = firstName.slice(1).toUpperCase();
             
+            // Measure full name width to center properly
             ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
             const firstLetterWidth = ctx.measureText(firstLetter).width;
-            ctx.fillText(firstLetter, textX, 240);
-            
             ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
-            ctx.fillText(restName, textX + firstLetterWidth, 240);
+            const restWidth = ctx.measureText(restName).width;
+            const totalWidth = firstLetterWidth + restWidth;
+            
+            // Draw from left offset to appear centered
+            const startX = textX - totalWidth / 2;
+            ctx.textAlign = 'left';
+            ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(firstLetter, startX, 240);
+            ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(restName, startX + firstLetterWidth, 240);
         }
         
-        // Last name - larger first letter
+        // Last name - larger first letter (centered)
         if (lastName) {
             const firstLetter = lastName.charAt(0).toUpperCase();
             const restName = lastName.slice(1).toUpperCase();
             
+            // Measure full name width to center properly
             ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
             const firstLetterWidth = ctx.measureText(firstLetter).width;
-            ctx.fillText(firstLetter, textX, 320);
-            
             ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
-            ctx.fillText(restName, textX + firstLetterWidth, 320);
+            const restWidth = ctx.measureText(restName).width;
+            const totalWidth = firstLetterWidth + restWidth;
+            
+            // Draw from left offset to appear centered
+            const startX = textX - totalWidth / 2;
+            ctx.textAlign = 'left';
+            ctx.font = '500 62px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(firstLetter, startX, 320);
+            ctx.font = '500 48px "Cormorant Garamond", Georgia, serif';
+            ctx.fillText(restName, startX + firstLetterWidth, 320);
         }
         
         // Draw small decorative branch below name (if uploaded)
         if (this.uploadedBranch) {
-            this.drawSmallBranch(ctx, textX + 80, 400);
+            this.drawSmallBranch(ctx, textX, 400);
         }
         
-        // Draw dates
+        // Draw dates - centered
         ctx.font = 'italic 48px "Cormorant Garamond", Georgia, serif';
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.textAlign = 'center';
         
         if (birthDate) {
             ctx.fillText(birthDate, textX, 500);
@@ -609,13 +645,8 @@ class ControlPanel {
             time: onTime
         });
         
-        const scheduleInfo = document.getElementById('scheduleInfo');
-        if (scheduleInfo) {
-            scheduleInfo.textContent = `Projektor włączy się o ${onTime}`;
-            scheduleInfo.classList.add('visible');
-            scheduleInfo.style.borderColor = 'var(--accent)';
-            scheduleInfo.style.color = 'var(--accent)';
-        }
+        // Odśwież status harmonogramu
+        setTimeout(() => this.refreshScheduleStatus(), 500);
     }
     
     async saveScheduleOff() {
@@ -626,13 +657,8 @@ class ControlPanel {
             time: offTime
         });
         
-        const scheduleInfo = document.getElementById('scheduleInfo');
-        if (scheduleInfo) {
-            scheduleInfo.textContent = `Projektor wyłączy się o ${offTime}`;
-            scheduleInfo.classList.add('visible');
-            scheduleInfo.style.borderColor = 'var(--accent)';
-            scheduleInfo.style.color = 'var(--accent)';
-        }
+        // Odśwież status harmonogramu
+        setTimeout(() => this.refreshScheduleStatus(), 500);
     }
     
     async disableSchedule() {
@@ -646,14 +672,8 @@ class ControlPanel {
             time: '00:00:00'
         });
         
-        // Show disabled info
-        const scheduleInfo = document.getElementById('scheduleInfo');
-        if (scheduleInfo) {
-            scheduleInfo.textContent = 'Harmonogram wyłączony';
-            scheduleInfo.classList.add('visible');
-            scheduleInfo.style.borderColor = '#c94a4a';
-            scheduleInfo.style.color = '#c94a4a';
-        }
+        // Odśwież status harmonogramu
+        setTimeout(() => this.refreshScheduleStatus(), 500);
     }
     
     async refreshStatus() {
@@ -716,8 +736,75 @@ class ControlPanel {
                     currentTrack.textContent = trackNum > 0 ? `Utwór ${trackNum}` : '--';
                 }
             }
+            
+            // Get schedule times
+            await this.refreshScheduleStatus();
+            
         } catch (error) {
             console.error('Refresh status error:', error);
+        }
+    }
+    
+    async refreshScheduleStatus() {
+        try {
+            const scheduleInfo = document.getElementById('scheduleInfo');
+            const scheduleOnInput = document.getElementById('scheduleOn');
+            const scheduleOffInput = document.getElementById('scheduleOff');
+            
+            // Get schedule ON time
+            const onResponse = await fetch(`${this.haUrl}/api/states/input_datetime.schedule_on`, {
+                headers: { 'Authorization': `Bearer ${this.haToken}` }
+            });
+            
+            // Get schedule OFF time
+            const offResponse = await fetch(`${this.haUrl}/api/states/input_datetime.schedule_off`, {
+                headers: { 'Authorization': `Bearer ${this.haToken}` }
+            });
+            
+            let onTime = '00:00';
+            let offTime = '00:00';
+            
+            if (onResponse.ok) {
+                const onData = await onResponse.json();
+                onTime = onData.state || '00:00';
+                // Update input field
+                if (scheduleOnInput && onTime !== '00:00:00') {
+                    scheduleOnInput.value = onTime.substring(0, 5);
+                }
+            }
+            
+            if (offResponse.ok) {
+                const offData = await offResponse.json();
+                offTime = offData.state || '00:00';
+                // Update input field
+                if (scheduleOffInput && offTime !== '00:00:00') {
+                    scheduleOffInput.value = offTime.substring(0, 5);
+                }
+            }
+            
+            // Check if schedule is active (times are not 00:00)
+            const isScheduleActive = onTime !== '00:00:00' && offTime !== '00:00:00' && 
+                                     onTime !== '00:00' && offTime !== '00:00';
+            
+            if (scheduleInfo) {
+                if (isScheduleActive) {
+                    const onFormatted = onTime.substring(0, 5);
+                    const offFormatted = offTime.substring(0, 5);
+                    scheduleInfo.innerHTML = `<strong>✓ HARMONOGRAM AKTYWNY</strong><br>Włączenie: ${onFormatted}<br>Wyłączenie: ${offFormatted}`;
+                    scheduleInfo.classList.add('visible');
+                    scheduleInfo.style.borderColor = '#4a9c6b';
+                    scheduleInfo.style.color = '#4a9c6b';
+                    scheduleInfo.style.background = 'rgba(74, 156, 107, 0.1)';
+                } else {
+                    scheduleInfo.innerHTML = `<strong>✗ HARMONOGRAM WYŁĄCZONY</strong>`;
+                    scheduleInfo.classList.add('visible');
+                    scheduleInfo.style.borderColor = '#c94a4a';
+                    scheduleInfo.style.color = '#c94a4a';
+                    scheduleInfo.style.background = 'rgba(201, 74, 74, 0.1)';
+                }
+            }
+        } catch (error) {
+            console.error('Refresh schedule error:', error);
         }
     }
 }
